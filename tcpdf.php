@@ -1815,6 +1815,14 @@ class TCPDF {
 	 */
 	protected $gdgammacache = array();
 
+    /**
+     * Cache lines obtained from Write when selected the $firstline option
+     * That helps to calculate the real height of a block and the rest of lines to print in the next page
+     * @protecte
+     * @since   (2016-10-19)
+     */
+    protected $rest_line_cache = array();
+
 	//------------------------------------------------------------
 	// METHODS
 	//------------------------------------------------------------
@@ -17091,6 +17099,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 	 * @public
 	 */
 	public function writeHTMLCell($w, $h, $x, $y, $html='', $border=0, $ln=0, $fill=false, $reseth=true, $align='', $autopadding=true) {
+	    $this->resetRestCacheLines();
 		return $this->MultiCell($w, $h, $html, $border, $align, $fill, $ln, $x, $y, $reseth, 0, true, $autopadding, 0, 'T', false);
 	}
 
@@ -24471,6 +24480,53 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 	}
 
 	// --- END SVG METHODS -----------------------------------------------------
+
+    /**
+     * @param string $rest
+     */
+    protected function addLineToRestCacheLines($rest){
+        $rest = trim($rest);
+        if(strlen($rest) == 0){
+            return;
+        }
+
+        if(count($this->rest_line_cache) > 0){
+            $prev = array_pop($this->rest_line_cache);
+
+            if(substr($prev, -strlen($rest)) == $rest){
+                $prev = trim(substr($prev, 0, strlen($prev) - strlen($rest)));
+            }
+            if(strlen($prev) > 0) {
+                $this->rest_line_cache[] = $prev;
+            }
+        }
+        $this->rest_line_cache[] = $rest;
+    }
+
+    /**
+     * traits and returns the last lines printed width the method, this can server as a way to split paragraphs
+     * @return array
+     */
+    public function getRestCacheLines() {
+        if(count($this->rest_line_cache) > 1){
+            $line = trim($this->rest_line_cache[0]);
+            for($i = count($this->rest_line_cache)-1; $i > 0; $i--){
+                if(substr($line, -strlen($this->rest_line_cache[$i])) == $this->rest_line_cache[$i]){
+                    $line = trim(substr($line, 0, strlen($line) - strlen($this->rest_line_cache[$i])));
+                }
+            }
+            $this->rest_line_cache[0] = $line;
+        }
+        return $this->rest_line_cache;
+    }
+
+    /**
+     * started by @writeHTMLCell or when the user wants
+     */
+    public function resetRestCacheLines()
+    {
+        $this->rest_line_cache = array();
+    }
 
 } // END OF TCPDF CLASS
 

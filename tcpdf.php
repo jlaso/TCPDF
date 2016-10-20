@@ -18434,6 +18434,9 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 							}
 							$xws = $this->x;
 						}
+                        if($firstblock){
+                            $this->addLineToRestCacheLines($dom[$key]['value']);
+                        }
 						// ****** write only until the end of the line and get the rest ******
 						$strrest = $this->Write($this->lasth, $dom[$key]['value'], '', $wfill, '', false, 0, true, $firstblock, 0, $wadj);
 						// restore default direction
@@ -18448,6 +18451,7 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
 				if (strlen($strrest) > 0) {
 					// store the remaining string on the previous $key position
 					$this->newline = true;
+                    $this->addLineToRestCacheLines($strrest);
 					if ($strrest == $dom[$key]['value']) {
 						// used to avoid infinite loop
 						++$loop;

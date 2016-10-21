@@ -24520,6 +24520,13 @@ Putting 1 is equivalent to putting 0 and calling Ln() just after. Default value:
                 }
             }
             $this->rest_line_cache[0] = $line;
+			for($i = 0; $i < count($this->rest_line_cache)-1; $i++){
+			    $next = $this->rest_line_cache[$i+1];
+		        if(substr($next, 0, 2) == "\xC2\xAD") {
+		            $this->rest_line_cache[$i] .= '-';
+		            $this->rest_line_cache[$i+1] = substr($this->rest_line_cache[$i+1], 2);
+		        }
+		    }
         }
         return $this->rest_line_cache;
     }
